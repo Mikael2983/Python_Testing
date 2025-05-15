@@ -122,7 +122,7 @@ def login():
 @app.route('/showSummary')
 @login_required
 def showSummary():
-    club = session['club']
+    club = session.get('club')
     return render_template('welcome.html',
                            club=club,
                            competitionsEnded=competitionsEnded,
@@ -134,7 +134,7 @@ def showSummary():
 def display_list_clubs():
     club = session.get('club')
     return render_template('listclub.html',
-                           connected_club=club,
+                           club=club,
                            clubs=clubs)
 
 
