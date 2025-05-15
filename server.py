@@ -37,6 +37,11 @@ competitions = loadCompetitions()
 clubs = loadClubs()
 
 
+def has_enough_points(club: dict, requested: int) -> bool:
+    """check if the club has enough points to book the requested places """
+    return int(club['points']) >= requested
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -82,11 +87,20 @@ def book(competition,club):
 @app.route('/purchasePlaces',methods=['POST'])
 @login_required
 def purchasePlaces():
-    competition = [c for c in competitions if c['name'] == request.form['competition']][0]
-    club = [c for c in clubs if c['name'] == request.form['club']][0]
+    club_name = session.get('club')['name']
+    club = next(c for c in clubs if c['name'] == club_name)
+
+    competition = next(c for c in competitions
+                       if c['name'] == request.form['competition'])
+
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
-    flash('Great-booking complete!')
+
+    if not has_enough_points(club, placesRequired):
+        flash("you don't have enough points")
+    else:
+        competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+        flash('Great-booking complete!')
+
     return render_template('welcome.html',
                            club=club,
                            competitions=competitions)
