@@ -129,6 +129,15 @@ def showSummary():
                            competitions=competitions)
 
 
+@app.route('/listclubs')
+@login_required
+def display_list_clubs():
+    club = session.get('club')
+    return render_template('listclub.html',
+                           connected_club=club,
+                           clubs=clubs)
+
+
 @app.route('/book/<competition>')
 @login_required
 def book(competition):
