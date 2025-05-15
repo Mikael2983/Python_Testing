@@ -140,6 +140,8 @@ def test_successful_booking(client, mocker, fake_data):
 
     assert response.status_code == 200
     assert b"Great-booking complete!" in response.data
+    assert competitions[1]['bookings'][clubs[0]['name']] == '1'
+    assert clubs[0]['points'] == '9'
     assert competitions[1]['numberOfPlaces'] == '4'
 
 
@@ -261,3 +263,23 @@ def test_book_invalid_competition(client, mocker, fake_data):
     assert response.status_code == 200
     assert b"Something went wrong-please try again" in response.data
 
+
+def test_display_list_club_requires_login(client):
+    response = client.get('/listclubs', follow_redirects=True)
+    assert b"You must be logged in" in response.data
+
+
+def test_display_list_club_render_template(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    club = clubs[0]
+
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+    mocker.patch("server.competitionsEnded", [])
+
+    client.post("/login", data={"email": club["email"]}, follow_redirects=True)
+
+    response = client.get('/listclubs', follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"List of clubs:" in response.data
