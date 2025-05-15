@@ -77,8 +77,7 @@ def test_show_summary_renders_welcome(client, mocker, fake_data):
 def test_book_requires_login(client, fake_data):
     clubs, competitions = fake_data
     competition_name = competitions[1]['name']
-    club_name = clubs[0]['name']
-    response = client.get(f'/book/{competition_name}/{club_name}',
+    response = client.get(f'/book/{competition_name}',
                           follow_redirects=True)
     assert b"You must be logged in" in response.data
 
@@ -126,6 +125,7 @@ def test_successful_booking(client, mocker, fake_data):
     clubs, competitions = fake_data
     mocker.patch("server.clubs", clubs)
     mocker.patch("server.competitions", competitions)
+    mocker.patch("server.competitionsEnded", [competitions[0]])
     mocker.patch("server.saveClubs")
     mocker.patch("server.saveCompetitions")
 
@@ -151,6 +151,7 @@ def test_booking_without_enough_points(client, mocker, fake_data):
     competition = competitions[1]
     mocker.patch("server.clubs", clubs)
     mocker.patch("server.competitions", competitions)
+    mocker.patch("server.competitionsEnded", [competitions[0]])
     mocker.patch("server.saveClubs")
     mocker.patch("server.saveCompetitions")
 
@@ -172,6 +173,7 @@ def test_booking_more_than_available_places(client, mocker, fake_data):
 
     mocker.patch("server.clubs", clubs)
     mocker.patch("server.competitions", competitions)
+    mocker.patch("server.competitionsEnded", [competitions[0]])
     mocker.patch("server.saveClubs")
     mocker.patch("server.saveCompetitions")
 
@@ -194,7 +196,7 @@ def test_booking_too_much_places(client, mocker, fake_data):
 
     mocker.patch("server.clubs", clubs)
     mocker.patch("server.competitions", competitions)
-
+    mocker.patch("server.competitionsEnded", [competitions[0]])
     mocker.patch("server.saveClubs")
     mocker.patch("server.saveCompetitions")
 
@@ -207,4 +209,55 @@ def test_booking_too_much_places(client, mocker, fake_data):
     }, follow_redirects=True)
 
     assert b"you can&#39;t book more than 12 places." in response.data
+
+
+def test_book_past_competition(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    club = clubs[0]
+    past_comp = competitions[0]
+
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+    mocker.patch("server.competitionsEnded", [past_comp])
+
+    client.post('/login', data={'email': club['email']}, follow_redirects=True)
+
+    response = client.get(f'/book/{past_comp['name']}', data={
+        'competition': past_comp,
+
+    }, follow_redirects=True)
+
+    assert b"competition is already over" in response.data
+
+
+def test_book_valid_competition(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    club = clubs[0]
+    competition = competitions[1]
+
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+
+    client.post("/login", data={"email": club["email"]}, follow_redirects=True)
+
+    response = client.get(f"/book/{competition['name']}",
+                          follow_redirects=True)
+
+    assert response.status_code == 200
+    assert f"Booking for {competition['name']}" in str(response.data)
+
+
+def test_book_invalid_competition(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    club = clubs[0]
+
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+
+    client.post("/login", data={"email": club["email"]}, follow_redirects=True)
+
+    response = client.get("/book/Unknown Competition", follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"Something went wrong-please try again" in response.data
 
