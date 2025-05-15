@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from functools import wraps
 
@@ -44,10 +45,22 @@ def saveCompetitions(listOfCompetitions: list,
         json.dump({'competitions': listOfCompetitions}, c, indent=4)
 
 
+def get_list_ended_competitions(listOfCompetitions):
+    competitionsOver = []
+    for competition in listOfCompetitions:
+        comp_date = datetime.strptime(competition['date'],
+                                      "%Y-%m-%d %H:%M:%S")
+        if comp_date < datetime.now():
+            competitionsOver.append(competition)
+    return competitionsOver
+
+
 app = Flask(__name__)
 app.secret_key = 'something_special'
 
 competitions = loadCompetitions()
+competitionsEnded = get_list_ended_competitions(competitions)
+
 clubs = loadClubs()
 
 
@@ -66,6 +79,11 @@ def is_booking_limit_exceeded(club_name: str, competition: dict,
     """ check if the club is trying to book more than 12 places """
     bookedPlaces = int(competition.get("bookings", {}).get(club_name, 0))
     return bookedPlaces + requested > 12
+
+
+def is_competition_over(competition: dict, competitionsEnded: list) -> bool:
+    """ Check if a competition is in the list of the ended competition"""
+    return competition in competitionsEnded
 
 
 def update_booking(club: dict, competition: dict, requested: int) -> None:
@@ -107,23 +125,31 @@ def showSummary():
     club = session['club']
     return render_template('welcome.html',
                            club=club,
+                           competitionsEnded=competitionsEnded,
                            competitions=competitions)
 
 
-@app.route('/book/<competition>/<club>')
+@app.route('/book/<competition>')
 @login_required
-def book(competition,club):
-    foundClub = [c for c in clubs if c['name'] == club][0]
-    foundCompetition = [c for c in competitions if c['name'] == competition][0]
-    if foundClub and foundCompetition:
-        return render_template('booking.html',
-                               club=foundClub,
-                               competition=foundCompetition)
+def book(competition):
+
+    club = session.get('club')
+
+    competition = competition.strip()
+    foundCompetition = next((c for c in competitions
+                             if c['name'] == competition), None)
+
+    if foundCompetition:
+        if not is_competition_over(foundCompetition, competitionsEnded):
+            return render_template('booking.html',
+                                   club=club,
+                                   competition=foundCompetition)
+        else:
+            flash('this competition is already over')
     else:
         flash("Something went wrong-please try again")
-        return render_template('welcome.html',
-                               club=club,
-                               competitions=competitions)
+
+    return redirect(url_for('showSummary'))
 
 
 @app.route('/purchasePlaces',methods=['POST'])
@@ -150,9 +176,7 @@ def purchasePlaces():
 
         flash('Great-booking complete!')
 
-    return render_template('welcome.html',
-                           club=club,
-                           competitions=competitions)
+    return redirect(url_for('showSummary'))
 
 
 # TODO: Add route for points display
