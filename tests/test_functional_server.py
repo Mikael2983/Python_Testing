@@ -120,3 +120,43 @@ def test_logout_clears_session_and_redirects(client, mocker, fake_data):
 
     assert response.status_code == 200
     assert b"secretary email" in response.data
+
+
+def test_successful_booking(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+
+    client.post('/login', data={'email': clubs[0]['email']},
+                follow_redirects=True)
+
+    response = client.post('/purchasePlaces', data={
+        'competition': competitions[1]['name'],
+        'club': clubs[0]['name'],
+        'places': '1'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"Great-booking complete!" in response.data
+    assert competitions[1]['numberOfPlaces'] == '4'
+
+
+def test_booking_without_enough_points(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    club = clubs[0]
+    club["points"] = "0"
+
+    competition = competitions[1]
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+
+    client.post('/login', data={'email': club['email']}, follow_redirects=True)
+
+    response = client.post('/purchasePlaces', data={
+        'competition': competition['name'],
+        'club': club['name'],
+        'places': '1'
+    }, follow_redirects=True)
+
+    assert b"you don&#39;t have enough points" in response.data
+
