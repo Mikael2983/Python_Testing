@@ -1,6 +1,21 @@
 import json
+from functools import wraps
+
 from flask import Flask, render_template, request, redirect, flash, url_for, \
     session
+
+
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+
+        club = session.get('club')
+        if not club:
+            flash("You must be logged in to access this page.")
+            return redirect(url_for('index'))
+        return view_func(*args, **kwargs)
+
+    return wrapper
 
 
 def loadClubs():
@@ -40,6 +55,7 @@ def login():
 
 
 @app.route('/showSummary')
+@login_required
 def showSummary():
     club = session['club']
     return render_template('welcome.html',
@@ -48,6 +64,7 @@ def showSummary():
 
 
 @app.route('/book/<competition>/<club>')
+@login_required
 def book(competition,club):
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
@@ -63,6 +80,7 @@ def book(competition,club):
 
 
 @app.route('/purchasePlaces',methods=['POST'])
+@login_required
 def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
@@ -78,6 +96,7 @@ def purchasePlaces():
 
 
 @app.route('/logout')
+@login_required
 def logout():
     session.clear()
     return redirect(url_for('index'))
