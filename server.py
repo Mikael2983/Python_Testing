@@ -47,6 +47,13 @@ def has_enough_places_available(competition: dict, placesRequired: int) -> bool:
     return int(competition['numberOfPlaces']) > placesRequired
 
 
+def is_booking_limit_exceeded(club_name: str, competition: dict,
+                              requested: int) -> bool:
+    """ check if the club is trying to book more than 12 places """
+    bookedPlaces = int(competition.get("bookings", {}).get(club_name, 0))
+    return bookedPlaces + requested > 12
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -100,7 +107,9 @@ def purchasePlaces():
 
     placesRequired = int(request.form['places'])
 
-    if not has_enough_points(club, placesRequired):
+    if is_booking_limit_exceeded(club['name'], competition, placesRequired):
+        flash("you can't book more than 12 places.")
+    elif not has_enough_points(club, placesRequired):
         flash("you don't have enough points")
     elif not has_enough_places_available(competition, placesRequired):
         flash("there are not enough places available")
