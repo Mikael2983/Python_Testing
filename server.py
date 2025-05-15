@@ -24,10 +24,24 @@ def loadClubs():
          return listOfClubs
 
 
-def loadCompetitions():
+def saveClubs(listOfClubs: list, file_path: str = 'clubs.json'):
+    """ save the list of club in the clubs.json file """
+    with open(file_path, 'w') as c:
+        json.dump({'clubs': listOfClubs}, c, indent=4)
+
+
+def loadCompetitions() -> list:
+    """ Read the competitions.json file and return a list of competitions """
     with open('competitions.json') as comps:
-         listOfCompetitions = json.load(comps)['competitions']
-         return listOfCompetitions
+        listOfCompetitions = json.load(comps)['competitions']
+        return listOfCompetitions
+
+
+def saveCompetitions(listOfCompetitions: list,
+                     file_path: str = 'competitions.json'):
+    """ save the list of competition in the competitions.json file """
+    with open(file_path, 'w') as c:
+        json.dump({'competitions': listOfCompetitions}, c, indent=4)
 
 
 app = Flask(__name__)
@@ -45,6 +59,29 @@ def has_enough_points(club: dict, requested: int) -> bool:
 def has_enough_places_available(competition: dict, placesRequired: int) -> bool:
     """Check that the competition has more places available than requested"""
     return int(competition['numberOfPlaces']) > placesRequired
+
+
+def is_booking_limit_exceeded(club_name: str, competition: dict,
+                              requested: int) -> bool:
+    """ check if the club is trying to book more than 12 places """
+    bookedPlaces = int(competition.get("bookings", {}).get(club_name, 0))
+    return bookedPlaces + requested > 12
+
+
+def update_booking(club: dict, competition: dict, requested: int) -> None:
+    """
+    updates the club and competition after a booking,
+    creates the dictionary "booking" for the competition if it doesn't exist
+    """
+    club['points'] = str(int(club['points']) - requested)
+    competition['numberOfPlaces'] = str(
+        int(competition['numberOfPlaces']) - requested)
+
+    if "bookings" not in competition:
+        competition["bookings"] = {}
+
+    bookedPlaces = int(competition["bookings"].get(club['name'], 0))
+    competition["bookings"][club['name']] = str(bookedPlaces + requested)
 
 
 @app.route('/')
@@ -100,12 +137,15 @@ def purchasePlaces():
 
     placesRequired = int(request.form['places'])
 
-    if not has_enough_points(club, placesRequired):
+    if is_booking_limit_exceeded(club['name'], competition, placesRequired):
+        flash("you can't book more than 12 places.")
+    elif not has_enough_points(club, placesRequired):
         flash("you don't have enough points")
     elif not has_enough_places_available(competition, placesRequired):
         flash("there are not enough places available")
     else:
-        competition['numberOfPlaces'] = str(int(competition['numberOfPlaces'])-placesRequired)
+        update_booking(club, competition, placesRequired)
+
         flash('Great-booking complete!')
 
     return render_template('welcome.html',
