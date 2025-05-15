@@ -160,3 +160,22 @@ def test_booking_without_enough_points(client, mocker, fake_data):
 
     assert b"you don&#39;t have enough points" in response.data
 
+
+def test_booking_more_than_available_places(client, mocker, fake_data):
+    clubs, competitions = fake_data
+    club = clubs[0]
+    competition = competitions[1]
+
+    mocker.patch("server.clubs", clubs)
+    mocker.patch("server.competitions", competitions)
+
+    client.post('/login', data={'email': club['email']}, follow_redirects=True)
+
+    response = client.post('/purchasePlaces', data={
+        'competition': competition['name'],
+        'club': club['name'],
+        'places': '7'
+    }, follow_redirects=True)
+
+    assert b"there are not enough places available" in response.data
+
