@@ -1,4 +1,3 @@
-import pytest
 from server import has_enough_points, has_enough_places_available, \
     update_booking, is_booking_limit_exceeded, get_list_ended_competitions, \
     is_competition_over

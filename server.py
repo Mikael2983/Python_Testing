@@ -9,7 +9,6 @@ from flask import Flask, render_template, request, redirect, flash, url_for, \
 def login_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-
         club = session.get('club')
         if not club:
             flash("You must be logged in to access this page.")
@@ -21,8 +20,8 @@ def login_required(view_func):
 
 def loadClubs():
     with open('clubs.json') as c:
-         listOfClubs = json.load(c)['clubs']
-         return listOfClubs
+        listOfClubs = json.load(c)['clubs']
+        return listOfClubs
 
 
 def saveClubs(listOfClubs: list, file_path: str = 'clubs.json'):
@@ -69,7 +68,8 @@ def has_enough_points(club: dict, requested: int) -> bool:
     return int(club['points']) >= requested
 
 
-def has_enough_places_available(competition: dict, placesRequired: int) -> bool:
+def has_enough_places_available(competition: dict,
+                                placesRequired: int) -> bool:
     """Check that the competition has more places available than requested"""
     return int(competition['numberOfPlaces']) > placesRequired
 
@@ -122,17 +122,25 @@ def login():
 @app.route('/showSummary')
 @login_required
 def showSummary():
-    club = session['club']
+    club = session.get('club')
     return render_template('welcome.html',
                            club=club,
                            competitionsEnded=competitionsEnded,
                            competitions=competitions)
 
 
+@app.route('/listclubs')
+@login_required
+def display_list_clubs():
+    club = session.get('club')
+    return render_template('listclub.html',
+                           club=club,
+                           clubs=clubs)
+
+
 @app.route('/book/<competition>')
 @login_required
 def book(competition):
-
     club = session.get('club')
 
     competition = competition.strip()
@@ -152,7 +160,7 @@ def book(competition):
     return redirect(url_for('showSummary'))
 
 
-@app.route('/purchasePlaces',methods=['POST'])
+@app.route('/purchasePlaces', methods=['POST'])
 @login_required
 def purchasePlaces():
     club_name = session.get('club')['name']
@@ -177,9 +185,6 @@ def purchasePlaces():
         flash('Great-booking complete!')
 
     return redirect(url_for('showSummary'))
-
-
-# TODO: Add route for points display
 
 
 @app.route('/logout')

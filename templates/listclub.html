@@ -1,0 +1,51 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary | GUDLFT Registration</title>
+    <style>
+        table {
+          border-collapse: collapse;
+          width: 30%;
+          margin: 20px;
+        }
+        th, td {
+          border: 1px solid black;
+          padding: 8px;
+          text-align: center;
+        }
+        th {
+          background-color: #f2f2f2;
+        }
+        .name {
+          width: 70%;
+        }
+        .points {
+          width: 30%;
+        }
+  </style>
+</head>
+<body>
+    <h2>Welcome, {{club['email']}} </h2>
+    <a href="{{url_for('showSummary')}}">Competitions</a><br>
+    <a href="{{url_for('logout')}}">Logout</a><br>
+
+    <h3>List of clubs:</h3>
+    <table>
+        <thead>
+          <tr>
+            <th>Club's name</th>
+            <th>Number of points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for club in clubs %}
+            <tr>
+              <td class="name">{{ club.name }}</td>
+              <td class="points">{{ club.points }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</body>
+</html>
