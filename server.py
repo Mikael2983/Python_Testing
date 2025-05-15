@@ -24,10 +24,24 @@ def loadClubs():
          return listOfClubs
 
 
-def loadCompetitions():
+def saveClubs(listOfClubs: list, file_path: str = 'clubs.json'):
+    """ save the list of club in the clubs.json file """
+    with open(file_path, 'w') as c:
+        json.dump({'clubs': listOfClubs}, c, indent=4)
+
+
+def loadCompetitions() -> list:
+    """ Read the competitions.json file and return a list of competitions """
     with open('competitions.json') as comps:
-         listOfCompetitions = json.load(comps)['competitions']
-         return listOfCompetitions
+        listOfCompetitions = json.load(comps)['competitions']
+        return listOfCompetitions
+
+
+def saveCompetitions(listOfCompetitions: list,
+                     file_path: str = 'competitions.json'):
+    """ save the list of competition in the competitions.json file """
+    with open(file_path, 'w') as c:
+        json.dump({'competitions': listOfCompetitions}, c, indent=4)
 
 
 app = Flask(__name__)
@@ -131,6 +145,9 @@ def purchasePlaces():
         flash("there are not enough places available")
     else:
         update_booking(club, competition, placesRequired)
+        saveClubs(clubs)
+        saveCompetitions(competitions)
+
         flash('Great-booking complete!')
 
     return render_template('welcome.html',
