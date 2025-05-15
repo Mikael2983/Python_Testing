@@ -42,6 +42,11 @@ def has_enough_points(club: dict, requested: int) -> bool:
     return int(club['points']) >= requested
 
 
+def has_enough_places_available(competition: dict, placesRequired: int) -> bool:
+    """Check that the competition has more places available than requested"""
+    return int(competition['numberOfPlaces']) > placesRequired
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -97,6 +102,8 @@ def purchasePlaces():
 
     if not has_enough_points(club, placesRequired):
         flash("you don't have enough points")
+    elif not has_enough_places_available(competition, placesRequired):
+        flash("there are not enough places available")
     else:
         competition['numberOfPlaces'] = str(int(competition['numberOfPlaces'])-placesRequired)
         flash('Great-booking complete!')
