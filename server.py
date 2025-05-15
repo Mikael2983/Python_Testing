@@ -54,6 +54,22 @@ def is_booking_limit_exceeded(club_name: str, competition: dict,
     return bookedPlaces + requested > 12
 
 
+def update_booking(club: dict, competition: dict, requested: int) -> None:
+    """
+    updates the club and competition after a booking,
+    creates the dictionary "booking" for the competition if it doesn't exist
+    """
+    club['points'] = str(int(club['points']) - requested)
+    competition['numberOfPlaces'] = str(
+        int(competition['numberOfPlaces']) - requested)
+
+    if "bookings" not in competition:
+        competition["bookings"] = {}
+
+    bookedPlaces = int(competition["bookings"].get(club['name'], 0))
+    competition["bookings"][club['name']] = str(bookedPlaces + requested)
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -114,7 +130,7 @@ def purchasePlaces():
     elif not has_enough_places_available(competition, placesRequired):
         flash("there are not enough places available")
     else:
-        competition['numberOfPlaces'] = str(int(competition['numberOfPlaces'])-placesRequired)
+        update_booking(club, competition, placesRequired)
         flash('Great-booking complete!')
 
     return render_template('welcome.html',
