@@ -43,9 +43,8 @@
     * clubs.json - list of clubs with relevant information. You can look here to see what email addresses the app will accept for login.
 
 5. Testing
+    The app is provided with 12 unit tests, 17 functional tests and 5 integration tests, using pytest framework and all passed.
+    ![image](https://github.com/user-attachments/assets/ced64e7c-f69c-45a1-9d49-3b11e2b8af12)
 
-    You are free to use whatever testing framework you like-the main thing is that you can show what tests you are using.
-
-    We also like to show how well we're testing, so there's a module called 
-    [coverage](https://coverage.readthedocs.io/en/coverage-5.1/) you should add to your project.
-
+    a performance test has been passed according to the functional specifications
+    a html report is available [here](https://mikael2983.github.io/Python_Testing/tests/Locust_2025-05-16-10h43_locustfile.py_http___localhost_8000.html)
