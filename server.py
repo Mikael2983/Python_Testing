@@ -2,8 +2,8 @@ from datetime import datetime
 import json
 from functools import wraps
 
-from flask import Flask, render_template, request, redirect, flash, url_for, \
-    session
+from flask import (
+    Flask, render_template, request, redirect, flash, url_for,session)
 
 
 def login_required(view_func):
