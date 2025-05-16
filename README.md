@@ -43,6 +43,7 @@
     * clubs.json - list of clubs with relevant information. You can look here to see what email addresses the app will accept for login.
 
 5. Testing
+   
     The app is provided with 12 unit tests, 17 functional tests and 5 integration tests, using pytest framework and all passed.
     ![image](https://github.com/user-attachments/assets/ced64e7c-f69c-45a1-9d49-3b11e2b8af12)
 
