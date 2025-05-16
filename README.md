@@ -46,6 +46,7 @@
    
     The app is provided with 12 unit tests, 17 functional tests and 5 integration tests, using pytest framework and all passed.
     ![image](https://github.com/user-attachments/assets/ced64e7c-f69c-45a1-9d49-3b11e2b8af12)
+   As this [Pytest-cov report](https://mikael2983.github.io/Python_Testing/htmlcov/index.html) shows, these tests cover all the lines of code and all the functions.
 
-    a performance test has been passed according to the functional specifications
-    a html report is available [here](https://mikael2983.github.io/Python_Testing/tests/Locust_2025-05-16-10h43_locustfile.py_http___localhost_8000.html)
+    a performance test has been passed according to the functional specifications.
+    the report is available [here](https://mikael2983.github.io/Python_Testing/tests/Locust_2025-05-16-10h43_locustfile.py_http___localhost_8000.html)
