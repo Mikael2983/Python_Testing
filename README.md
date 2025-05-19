@@ -49,4 +49,4 @@
    As this [Pytest-cov report](https://mikael2983.github.io/Python_Testing/htmlcov/index.html) shows, these tests cover all the lines of code and all the functions.
 
     a performance test has been passed according to the functional specifications.
-    the report is available [here](https://mikael2983.github.io/Python_Testing/tests/Locust_2025-05-16-10h43_locustfile.py_http___localhost_8000.html)
+    the report is available [here](https://mikael2983.github.io/Python_Testing/tests/Locust_2025-05-19-10h29_locustfile.py_http___localhost_8000.html)
